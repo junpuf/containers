@@ -7,7 +7,7 @@
 ARG SLURM_VERSION=24.05.6
 
 ################################################################################
-ARG PARENT_IMAGE=ubuntu:24.04
+ARG PARENT_IMAGE=763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.6.0-gpu-py312-cu126-ubuntu22.04-ec2
 FROM ${PARENT_IMAGE} AS build
 
 SHELL ["bash", "-c"]
@@ -28,7 +28,13 @@ RUN <<EOR
 set -xeuo pipefail
 apt-get -qq update
 apt-get -qq -y install --no-install-recommends \
-  build-essential fakeroot devscripts equivs curl
+  build-essential fakeroot devscripts equivs curl \
+  hwloc
+# Fix hwloc symlinks
+mkdir -p /usr/local/lib
+rm -f /usr/local/lib/libhwloc.so*
+ln -s /usr/lib/x86_64-linux-gnu/libhwloc.so* /usr/local/lib/
+ldconfig
 ## Download
 SLURM_DIR="slurm-${SLURM_VERSION}"
 mkdir -p $SLURM_DIR
